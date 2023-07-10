@@ -80,8 +80,10 @@ function parseTextNode(
 
     if (includeChinese(value)) {
       if (type === 'text') {
-        str += `{{${getReplaceValue(value)}}}`
-        Collector.add(value, customizeKey)
+        const strMatch = value.match(/(^\s*)([^\s]+)(\s*$)/) as RegExpMatchArray
+
+        str += `${strMatch[1]}{{${getReplaceValue(strMatch[2])}}}${strMatch[3]}`
+        Collector.add(strMatch[2], customizeKey)
       } else if (type === 'name') {
         const source = parseJsSyntax(value, rule)
         str += `{{${source}}}`
