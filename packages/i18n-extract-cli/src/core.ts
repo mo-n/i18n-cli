@@ -223,6 +223,11 @@ export default async function (options: CommandOptions) {
   if (!skipExtract) {
     log.info('正在转换中文，请稍等...')
 
+    // 增量转换时，保留之前的提取的中文结果
+    if (i18nConfig.incremental) {
+      Collector.setKeyMap(oldPrimaryLang)
+    }
+
     const sourceFilePaths = getSourceFilePaths(input, exclude)
     const bar = new cliProgress.SingleBar(
       {
@@ -262,11 +267,6 @@ export default async function (options: CommandOptions) {
 
       bar.increment()
     })
-    // 增量转换时，保留之前的提取的中文结果
-    if (i18nConfig.incremental) {
-      const newkeyMap = merge(oldPrimaryLang, Collector.getKeyMap())
-      Collector.setKeyMap(newkeyMap)
-    }
 
     saveLocale(localePath)
     bar.stop()
