@@ -226,7 +226,7 @@ function transformJs(code: string, options: transformOptions): GeneratorResult {
 
           if (shouldReplace) {
             let value = ''
-            let slotIndex = 1
+            let slotIndex = 0
             const params: TemplateParams = {}
             templateMembers.forEach(function (node) {
               if (node.type === 'Identifier') {
@@ -235,7 +235,7 @@ function transformJs(code: string, options: transformOptions): GeneratorResult {
               } else if (node.type === 'TemplateElement') {
                 value += node.value.raw.replace(/[\r\n]/g, '') // 用raw防止字符串中出现 /n
               } else if (node.type === 'MemberExpression') {
-                const key = `slot${slotIndex++}`
+                const key = `${slotIndex++}`
                 value += `{${key}}`
                 params[key] = {
                   isAstNode: true,
@@ -243,7 +243,7 @@ function transformJs(code: string, options: transformOptions): GeneratorResult {
                 }
               } else {
                 // 处理${}内容为表达式的情况。例如`测试${a + b}`，把 a+b 这个语法树作为params的值, 并自定义params的键为slot加数字的形式
-                const key = `slot${slotIndex++}`
+                const key = `${slotIndex++}`
                 value += `{${key}}`
                 const expression = babelGenerator(node).code
                 const tempAst = transformAST(expression, options) as any
