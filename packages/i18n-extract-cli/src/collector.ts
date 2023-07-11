@@ -33,7 +33,8 @@ class Collector {
     value = removeLineBreaksInTag(value)
     const customizeKey = customizeKeyFn(value, this.currentFilePath, this.keyMap) // key中不能包含回车
     log.verbose('提取中文：', value)
-    this.keyMap[customizeKey] = value.replace('|', "{'|'}") // '|' 管道符在vue-i18n表示复数形式,需要特殊处理。见https://vue-i18n.intlify.dev/guide/essentials/pluralization.html
+    this.keyMap[customizeKey] = value
+    // this.keyMap[customizeKey] = value.replace('|', "{'|'}") // '|' 管道符在vue-i18n表示复数形式,需要特殊处理。见https://vue-i18n.intlify.dev/guide/essentials/pluralization.html
     this.countOfAdditions++
     this.currentFileKeyMap[customizeKey] = value
   }
