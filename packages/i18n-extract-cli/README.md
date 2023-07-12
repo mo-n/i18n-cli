@@ -26,7 +26,7 @@
 ## 安装
 
 ```
-npm i @ifreeovo/i18n-extract-cli -g
+npm i -g  @supaur/i18n-extract-cli --registry=http://npm.supaur.top
 ```
 
 ## 使用
@@ -67,101 +67,90 @@ it
 
 ```js
 // 以下为i18n.config.js默认的完整配置，所有属性均为可选，可以根据自身需要修改
+
+// 用于中文转拼音
+const limax = require('limax')
+// 读取格式化配置
+const fs = require('fs')
+const prettierConfig = JSON.parse(fs.readFileSync('./.prettierrc', 'utf-8'))
+
 module.exports = {
   input: 'src',
   output: '', // 没有值时表示完成提取后自动覆盖原始文件
-  exclude: ['**/node_modules/**/*'], // 排除不需要提取的文件
-  localePath: './locales/zh-CN.json', // 中文语言包的存放位置
-  localeFileType: 'json', // 设置语言包的文件类型，支持js、json。默认为json
-  // rules每个属性对应的是不同后缀文件的处理方式
-  rules: {
-    js: {
-      caller: '', // 自定义this.$t('xxx')中的this。不填则默认没有调用对象
-      functionName: 't', // 自定义this.$t('xxx')中的$t
-      customizeKey: function (key, currentFilePath) {
-        return key
-      }, // 自定义this.$t('xxx')中的'xxx'部分的生成规则
-      importDeclaration: 'import { t } from "i18n"', // 默认在文件里导入i18n包。不填则默认不导入i18n的包。由于i18n的npm包有很多，用户可根据项目自行修改导入语法
-      forceImport: false, // 即使文件没出现中文，也强行插入importDeclaration定义的语句
-    },
-    // ts,cjs,mjs,jsx,tsx配置方式同上
-    ts: {
-      caller: '',
-      functionName: 't',
-      customizeKey: function (key, currentFilePath) {
-        return key
-      },
-      importDeclaration: 'import { t } from "i18n"',
-      forceImport: false,
-    },
-    cjs: {
-      caller: '',
-      functionName: 't',
-      customizeKey: function (key, currentFilePath) {
-        return key
-      },
-      importDeclaration: 'import { t } from "i18n"',
-      forceImport: false,
-    },
-    mjs: {
-      caller: '',
-      functionName: 't',
-      customizeKey: function (key, currentFilePath) {
-        return key
-      },
-      importDeclaration: 'import { t } from "i18n"',
-      forceImport: false,
-    },
-    jsx: {
-      caller: '',
-      functionName: 't',
-      customizeKey: function (key, currentFilePath) {
-        return key
-      },
-      importDeclaration: 'import { t } from "i18n"',
-      functionSnippets: '', // react函数组件里，全局加代码片段
-      forceImport: false,
-    },
-    tsx: {
-      caller: '',
-      functionName: 't',
-      customizeKey: function (key, currentFilePath) {
-        return key
-      },
-      importDeclaration: 'import { t } from "i18n"',
-      functionSnippets: '',
-      forceImport: false,
-    },
-    vue: {
-      caller: 'this',
-      functionNameInTemplate: '$t',// vue这里的配置，仅针对vue的template标签里面的内容生效
-      functionNameInScript: '$t', // vue这里的配置，仅针对vue的script部分export default里面的内容生效
-      customizeKey: : function (key, currentFilePath) {
-        return key
-      },
-      importDeclaration: '',
-      forceImport: false,
-    },
-  },
-  globalRule: {
-    ignoreMethods: [] // 忽略指定函数调用的中文提取。例如想忽略sensor.track('中文')的提取。这里就写['sensor.track']
-  },
+  localePath: './locale/zh-CN.json', // 中文语言包的存放位置
+  localeFileType: 'json',
+  exclude: ['**/node_modules/**/*'],
   // prettier配置，参考https://prettier.io/docs/en/options.html
-  prettier: {
-    semi: false,
-    singleQuote: true,
-  },
+  prettier: prettierConfig,
+  incremental: true, // 开启后。支持将文件中提取到中文键值对，追加到原有的中文语言包。
   skipExtract: false, // 跳过提取中文阶段
-  // 以下是和翻译相关的配置，注意搭配使用
+  excelPath: './locales.xlsx',
+  exportExcel: false,
   skipTranslate: true, // 跳过翻译语言包阶段。默认不翻译
-  locales: [], // 需要翻译的语言包。例如['en', 'zh-CHT']，会自动翻译英文和繁体
-  excelPath: './locales.xlsx', // excel存放路径
-  exportExcel: false, // 是否导出excel
+  locales: ['en-US'],
   // 参数：
   // allKeyValue：已遍历的所有文件的key-value
   // currentFileKeyMap: 当前文件提取到的key-value
   // currentFilePath: 当前遍历的文件路径
-  adjustKeyMap(allKeyValue, currentFileKeyMap, currentFilePath) {return allKeyValue}, // 对提取结构进行二次处理
+  adjustKeyMap(allKeyValue, currentFileKeyMap, currentFilePath) {
+    return allKeyValue
+  }, // 对提取结构进行二次处理
+  // rules每个属性对应的是不同后缀文件的处理方式
+  rules: {
+    js: {
+      caller: '', // 自定义this.$t('xxx')中的this。不填则默认没有调用对象
+      functionName: 'i18n.t', // 自定义this.$t('xxx')中的$t
+      customizeKey: function (text, currentFilePath, keyMap) {
+        // 自定义key。text为中文文案。currentFilePath为当前文件路径。keyMap为当前文件中已提取的中文文案映射表
+        for (const [key, val] of Object.entries(keyMap)) {
+          if (val === text) {
+            return key
+          }
+        }
+        let key = limax(text, { separator: '-', tone: false }).slice(0, 10)
+        if (keyMap && Object.prototype.hasOwnProperty.call(keyMap, key) && keyMap[key] !== text) {
+          let num = 0
+          const originalKey = key
+          do {
+            key = `${originalKey}-${num}`
+            num += 1
+          } while (Object.prototype.hasOwnProperty.call(keyMap, key) && keyMap[key] !== text)
+        }
+        return key
+      },
+      importDeclaration: 'import i18n from "@/i18n"', // 默认在文件里导入i18n包。不填则默认不导入i18n的包。由于i18n的npm包有很多，用户可根据项目自行修改导入语法
+      forceImport: false, // 即使文件没出现中文，也强行插入importDeclaration定义的语句
+    },
+    vue: {
+      caller: '',
+      functionNameInTemplate: '$t', // vue这里的配置，仅针对vue的template标签里面的内容生效
+      functionNameInScript: 'i18n.t', // vue这里的配置，仅针对vue的script部分export default里面的内容生效
+      customizeKey: function (text, currentFilePath, keyMap) {
+        // 自定义key。text为中文文案。currentFilePath为当前文件路径。keyMap为当前文件中已提取的中文文案映射表
+        for (const [key, val] of Object.entries(keyMap)) {
+          if (val === text) {
+            return key
+          }
+        }
+        let key = limax(text, { separator: '-', tone: false }).slice(0, 10)
+        if (keyMap && Object.prototype.hasOwnProperty.call(keyMap, key) && keyMap[key] !== text) {
+          let num = 0
+          const originalKey = key
+          do {
+            key = `${originalKey}-${num}`
+            num += 1
+          } while (Object.prototype.hasOwnProperty.call(keyMap, key) && keyMap[key] !== text)
+        }
+        return key
+      },
+      importDeclaration: 'import i18n from "@/i18n"',
+      forceImport: false,
+    },
+  },
+  globalRule: {
+    // 忽略指定函数调用的中文提取。例如想忽略sensor.track('中文')的提取。这里就写['sensor.track']
+    ignoreMethods: [],
+  },
 }
 ```
 

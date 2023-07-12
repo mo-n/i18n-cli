@@ -1,5 +1,5 @@
 {
-  "name": "@ifreeovo/i18n-extract-cli",
+  "name": "@supaur/i18n-extract-cli",
   "version": "3.0.5",
   "description": "这是一款能够自动将代码里的中文转成i18n国际化标记的命令行工具。当然，你也可以用它实现将中文语言包自动翻译成其他语言。适用于vue2、vue3和react",
   "publishConfig": {
@@ -62,7 +62,7 @@
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
     "minimist": "^1.2.8",
-    "mustache": "https://github.com/IFreeOvO/mustache.js.git",
+    "mustache": "^4.2.0",
     "node-xlsx": "^0.21.0",
     "prettier": "^2.7.1",
     "proxy-agent": "^5.0.0",

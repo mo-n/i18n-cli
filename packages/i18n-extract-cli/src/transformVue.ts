@@ -80,7 +80,7 @@ function parseTextNode(
 
     if (includeChinese(value)) {
       if (type === 'text') {
-        const strMatch = value.match(/(^\s*)(.+?)(\s*$)/)
+        const strMatch = value.match(/(^\s*)([\s\S]+?)(\s*$)/)
 
         if (!strMatch || strMatch.length < 4) {
           log.error('匹配文本节点出错：', value)
