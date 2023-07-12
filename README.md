@@ -33,7 +33,7 @@ npm i @ifreeovo/i18n-extract-cli -g
 
 ## 使用文档
 
-[点击这里](https://github.com/IFreeOvO/i18n-cli/tree/master/packages/i18n-extract-cli)
+[点击这里](https://gitlab10.supaur.cn/chery-global/frontend/i18n-extract-cli/tree/master/packages/i18n-extract-cli)
 
 ## 转换效果示例
 
