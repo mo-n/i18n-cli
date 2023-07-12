@@ -1,5 +1,12 @@
 # @ifreeovo/i18n-extract-cli
 
+## 3.0.6
+
+### Patch Changes
+
+- 匹配现有国际化提取规则
+- 完善文本匹配功能
+
 ## 3.0.5
 
 ### Patch Changes
